@@ -1,25 +1,37 @@
-public RuleModel ToRuleModel()
-{
-    var options = new JsonSerializerOptions
-    {
-        ReferenceHandler = ReferenceHandler.IgnoreCycles,
-        MaxDepth = 256
-    };
+See the end of this message for details on invoking 
+just-in-time (JIT) debugging instead of this dialog box.
 
-    return new RuleModel
-    {
-        Country = Country,
-        Frequency = Frequency,
-        Id = Id,
-        Label = Label,
-        LabelRank = LabelRank,
-        Points = Points,
-        Reportable = Reportable,
-        RuleType = RuleType,
-        Score = Score,
-        State = State,
-        ExpressionString = ExpressionString,
-        Expressions = MongoDB.Bson.Serialization.BsonSerializer
-            .Deserialize<BsonDocument>(JsonSerializer.Serialize(Expressions, options))
-    };
-}
+************** Exception Text **************
+System.InvalidOperationException: CurrentDepth (64) is equal to or larger than the maximum allowed depth of 64. Cannot write the next JSON object or array.
+   at System.Text.Json.ThrowHelper.ThrowInvalidOperationException(ExceptionResource resource, Int32 currentDepth, Int32 maxDepth, Byte token, JsonTokenType tokenType)
+   at System.Text.Json.Utf8JsonWriter.WriteStart(Byte token)
+   at System.Text.Json.JsonDocument.WriteComplexElement(Int32 index, Utf8JsonWriter writer)
+   at System.Text.Json.JsonDocument.WriteElementTo(Int32 index, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.JsonElementConverter.Write(Utf8JsonWriter writer, JsonElement value, JsonSerializerOptions options)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWriteAsObject(Utf8JsonWriter writer, Object value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
+   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+   at System.Text.Json.Serialization.JsonConverter`1.WriteCore(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+
+
+************** Loaded Assemblies **************
+System.Private.CoreLib
+    Assembly Version: 8.0.0.0
+    Location: C:\Program Files (x86)\dotnet\shared\Microsoft.NETCore.App\8.0.22\System.Private.CoreLib.dll
+----------------------------------------
+RulesUpload
+    Assembly Version: 1.0.0.0
+    Location: C:\Satya\Rules_upload\MVR\MVR\RulesUpload\bin\Debug\net8.0-windows10.0.19041.0\RulesUpload.dll
+----------------------------------------
+System.Runtime
+    Assembly Version: 8.0.0.0
+    Location: C:\Program Files (x86)\dotnet\shared\Microsoft.NET
