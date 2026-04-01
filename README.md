@@ -1,29 +1,8 @@
-private BsonValue ConvertToBson(object value)
-{
-    if (value == null)
-        return BsonNull.Value;
+See the end of this message for details on invoking 
+just-in-time (JIT) debugging instead of this dialog box.
 
-    if (value is RuleExpressions expr)
-    {
-        return new BsonDocument
-        {
-            { "operator", expr.Operator ?? "" },
-            { "left", ConvertToBson(expr.Left) },
-            { "right", ConvertToBson(expr.Right) }
-        };
-    }
-
-    if (value is string s)
-        return new BsonString(s);
-
-    if (value is int i)
-        return new BsonInt32(i);
-
-    if (value is double d)
-        return new BsonDouble(d);
-
-    if (value is bool b)
-        return new BsonBoolean(b);
-
-    return new BsonString(value.ToString());
-}
+************** Exception Text **************
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at RulesUpload.CreateRules.ChargeSeverityValidation.TraverseJsonElement(RuleExpressions root, CreateRuleParameters createRuleParameters, CreateRulesRequest createRulesRequest) in C:\Satya\Rules_upload\MVR\MVR\RulesUpload\CreateRules\CreateRule.cs:line 705
+   at RulesUpload.CreateRules.ChargeSeverityValidation.<>c__DisplayClass5_0.<ListOfChargeSeverity>b__0(CreateRuleParameters rules) in C:\Satya\Rules_upload\MVR\MVR\RulesUpload\CreateRules\CreateRule.cs:line 696
+   at System.Collections.Generic.List`1.ForEach(Action`1 action)
