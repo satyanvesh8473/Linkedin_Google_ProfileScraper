@@ -1,0 +1,94 @@
+using System;
+using System.IO;
+using System.Collections.Generic;
+using RulesUpload.CreateRules;
+
+public class ExpressionParser
+{
+   private readonly List<Token> _tokens;
+   private int _position = 0;
+   public ExpressionParser(List<Token> tokens)
+   {
+       _tokens = tokens;
+   }
+   private Token Current => _tokens[_position];
+   private Token Consume()
+   {
+       return _tokens[_position++];
+   }
+   public RuleExpressions Parse()
+{
+//    string debugPath = @"C:\Satya\Rules_upload\debug_tokens.txt";
+//    File.AppendAllText(debugPath, "----TOKENS----\n");
+//    foreach (var t in _tokens)
+//    {
+//        File.AppendAllText(debugPath, $"{t.Type} : {t.Value}\n");
+//    }
+//    File.AppendAllText(debugPath, "----------------\n\n");
+   var expr = ParseOr();
+   if (Current.Type != TokenType.End)
+       throw new Exception("Unexpected token after expression");
+   return expr;
+}
+   private RuleExpressions ParseOr()
+   {
+       var left = ParseAnd();
+       while (Current.Type == TokenType.Or)
+       {
+           Consume(); // consume ||
+           var right = ParseAnd();
+           left = new RuleExpressions
+           {
+               Left = left,
+               Operator = "Or",
+               Right = right
+           };
+       }
+       return left;
+   }
+   private RuleExpressions ParseAnd()
+   {
+       var left = ParseTerm();
+       while (Current.Type == TokenType.And)
+       {
+           Consume(); // consume &&
+           var right = ParseTerm();
+           left = new RuleExpressions
+           {
+               Left = left,
+               Operator = "And",
+               Right = right
+           };
+       }
+       return left;
+   }
+   private RuleExpressions ParseTerm()
+   {
+       if (Current.Type == TokenType.LParen)
+       {
+           Consume(); // consume '('
+           var expr = ParseOr();
+           if (Current.Type != TokenType.RParen)
+               throw new Exception($"Expected RParen but found {Current.Type}");
+           Consume(); // consume ')'
+           return expr;
+       }
+       return ParseComparison();
+   }
+   private RuleExpressions ParseComparison()
+   {
+       if (Current.Type != TokenType.Identifier)
+           throw new Exception($"Expected field name but found {Current.Type}");
+       var left = Consume();
+       if (Current.Type != TokenType.RelOp)
+           throw new Exception($"Expected relational operator after {left.Value}");
+       var op = Consume();
+       if (Current.Type != TokenType.Identifier &&
+           Current.Type != TokenType.String &&
+           Current.Type != TokenType.Number)
+           throw new Exception($"Invalid comparison value near {Current.Value}");
+       var right = Consume();
+       return new CreateRuleManager()
+           .BuildExpression_Operator($"{left.Value}{op.Value}{right.Value}");
+   }
+}
