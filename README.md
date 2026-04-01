@@ -1,45 +1,37 @@
-See the end of this message for details on invoking 
-just-in-time (JIT) debugging instead of this dialog box.
-
-************** Exception Text **************
-System.NullReferenceException: Object reference not set to an instance of an object.
-   at RulesUpload.CreateRules.RulePayLoadValidation.IsValid(CreateRuleParameters rule) in C:\Satya\Rules_upload\MVR\MVR\RulesUpload\CreateRules\CreateRule.cs:line 1096
-   at RulesUpload.CreateRules.CreateRuleManager.SaveRule(CreateRulesRequest obj, Boolean& isModelIdPresent) in C:\Satya\Rules_upload\MVR\MVR\RulesUpload\CreateRules\CreateRule.cs:line 326
-   at RulesUpload.CreateRules.CreateRuleManager.CreateRule(CreateRulesRequest obj, Boolean& isModelIdPresent, EventHandler`1 onChangeHandler) in C:\Satya\Rules_upload\MVR\MVR\RulesUpload\CreateRules\CreateRule.cs:line 311
-   at RulesUpload.CreateRules.CreateRuleManager.Create(String path, Int32 env, EventHandler`1 onChangeHandler) in C:\Satya\Rules_upload\MVR\MVR\RulesUpload\CreateRules\CreateRule.cs:line 284
-   at RulesUpload.UploadRules.<>c__DisplayClass5_0.<btnProcess_Click>b__0() in C:\Satya\Rules_upload\MVR\MVR\RulesUpload\CreateRules\UploadRules.cs:line 102
-   at System.Threading.Tasks.Task`1.InnerInvoke()
-   at System.Threading.Tasks.Task.<>c.<.cctor>b__281_0(Object obj)
-   at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
---- End of stack trace from previous location ---
-   at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
-   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
---- End of stack trace from previous location ---
-   at RulesUpload.UploadRules.btnProcess_Click(Object sender, EventArgs e) in C:\Satya\Rules_upload\MVR\MVR\RulesUpload\CreateRules\UploadRules.cs:line 102
-   at System.Threading.Tasks.Task.<>c.<ThrowAsync>b__128_0(Object state)
-   at InvokeStub_SendOrPostCallback.Invoke(Object, Span`1)
-   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
-
-
-************** Loaded Assemblies **************
-System.Private.CoreLib
-    Assembly Version: 8.0.0.0
-    Location: C:\Program Files (x86)\dotnet\shared\Microsoft.NETCore.App\8.0.22\System.Private.CoreLib.dll
-----------------------------------------
-RulesUpload
-    Assembly Version: 1.0.0.0
-    Location: C:\Satya\Rules_upload\MVR\MVR\RulesUpload\bin\Debug\net8.0-windows10.0.19041.0\RulesUpload.dll
-----------------------------------------
-System.Runtime
-    Assembly Version: 8.0.0.0
-    Location: C:\Program Files (x86)\dotnet\shared\Microsoft.NETCore.App\8.0.22\System.Runtime.dll
-----------------------------------------
-System.Windows.Forms
-    Assembly Version: 8.0.0.0
-    Location: C:\Program Files (x86)\dotnet\shared\Microsoft.WindowsDesktop.App\8.0.22\System.Windows.Forms.dll
-----------------------------------------
-System.Windows.Forms.Primitives
-    Assembly Version: 8.0.0.0
-    Location: C:\Program Files (x86)\dotnet\shared\Microsoft.WindowsDesktop.App\8.0.22\System.Windows.Forms.Primitives.dll
-----------------------------------------
-System.ComponentModel.P
+ public static bool IsValid(CreateRuleParameters rule)
+        {
+            if (rule.Expressions.Operator == null || rule.RuleType == null)
+            {
+                throw new ApplicationException("Rule Type Parameter value");
+            }
+            if (!IsValidRuleType(rule.RuleType))
+            {
+                throw new ApplicationException(string.Format(" Rule Type {0}", rule.RuleType));
+            }
+            NullValueCheck(rule.Expressions);
+            var leftElement = (JsonElement)rule.Expressions.Left;
+            var rightElement = (JsonElement)rule.Expressions.Right;
+            if (leftElement.ValueKind == JsonValueKind.String || leftElement.ValueKind == JsonValueKind.Number)
+            {
+                if (rule.Expressions.Operator == null)
+                {
+                    throw new ApplicationException("Relational Operator Value null");
+                }
+                string leftvalue = leftElement.ToString();
+                if (!Enum.IsDefined(typeof(RelationalOperator), rule.Expressions.Operator))
+                {
+                    throw new ApplicationException(string.Format(" Relational operator {0}", rule.Expressions.Operator.ToString()));
+                }
+                string rightvalue = rightElement.ToString();
+                LeftRightCheck(leftvalue, rightvalue);
+                if ((leftvalue.EndsWith("Age") || leftvalue == "ConfinementDuration" || leftvalue == "Salary") && (leftElement.ValueKind != JsonValueKind.Number))
+                {
+                    throw new ApplicationException(string.Format("Right Value is Invalid for Left Value {0}", leftvalue.ToString()));
+                }
+            }
+            else
+            {
+                Preoder(rule.Expressions);
+            }
+            return true;
+        }
