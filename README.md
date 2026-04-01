@@ -1,21 +1,183 @@
-See the end of this message for details on invoking 
-just-in-time (JIT) debugging instead of this dialog box.
- 
-************** Exception Text **************
-System.InvalidOperationException: CurrentDepth (64) is equal to or larger than the maximum allowed depth of 64. Cannot write the next JSON object or array.
-   at System.Text.Json.ThrowHelper.ThrowInvalidOperationException(ExceptionResource resource, Int32 currentDepth, Int32 maxDepth, Byte token, JsonTokenType tokenType)
-   at System.Text.Json.Utf8JsonWriter.WriteStart(Byte token)
-   at System.Text.Json.JsonDocument.WriteComplexElement(Int32 index, Utf8JsonWriter writer)
-   at System.Text.Json.JsonDocument.WriteElementTo(Int32 index, Utf8JsonWriter writer)
-   at System.Text.Json.Serialization.Converters.JsonElementConverter.Write(Utf8JsonWriter writer, JsonElement value, JsonSerializerOptions options)
-   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
-   at System.Text.Json.Serialization.JsonConverter`1.TryWriteAsObject(Utf8JsonWriter writer, Object value, JsonSerializerOptions options, WriteStack& state)
-   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
-   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
-   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
-   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
-   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
-   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
-   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
-   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
-   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Serializers;
+
+namespace RulesUpload.CreateRules
+{
+    [BsonIgnoreExtraElements]
+    public class CreateRulesRequest
+    {
+        [BsonElement("model_id")]
+        [JsonPropertyName("model_id")]
+        public string ModelId { get; set; }
+
+        [BsonElement("hash_code")]
+        [JsonPropertyName("hash_code")]
+        public string HashCode { get; set; }
+
+        [BsonElement("rules")]
+        [JsonPropertyName("rules")]
+        public List<CreateRuleParameters> Rules { get; set; }
+    }
+
+    [BsonIgnoreExtraElements]
+    public class CreateRuleParameters
+    {
+        [BsonElement("id")]
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [BsonElement("state")]
+        [JsonPropertyName("state")]
+        public string State { get; set; }
+
+        [BsonElement("country")]
+        [JsonPropertyName("country")]
+        public string Country { get; set; }
+
+        [BsonElement("type")]
+        [JsonPropertyName("type")]
+        public string RuleType { get; set; }
+
+        [BsonElement("reportable")]
+        [JsonPropertyName("reportable")]
+        public bool Reportable { get; set; }
+
+        [BsonElement("score")]
+        [JsonPropertyName("score")]
+        public string Score { get; set; }
+
+        [BsonElement("points")]
+        [JsonPropertyName("points")]
+        public double Points { get; set; }
+
+        [BsonElement("frequency")]
+        [JsonPropertyName("frequency")]
+        public int Frequency { get; set; }
+
+        [BsonElement("label")]
+        [JsonPropertyName("label")]
+        public string Label { get; set; }
+
+        [BsonElement("label_rank")]
+        [JsonPropertyName("label_rank")]
+        public int LabelRank { get; set; }
+
+        [BsonElement("expressions")]
+        [JsonPropertyName("expressions")]
+        public RuleExpressions Expressions { get; set; }
+
+        [BsonElement("complexExpressions")]
+        [JsonPropertyName("complexExpressions")]
+        public string ExpressionString { get; set; }
+
+
+        public RuleModel ToRuleModel()
+        {
+            return new RuleModel
+            {
+                Country = Country,
+                Frequency = Frequency,
+                Id = Id,
+                Label = Label,
+                LabelRank = LabelRank,
+                Points = Points,
+                Reportable = Reportable,
+                RuleType = RuleType,
+                Score = Score,
+                State = State,
+              //Expressions = Expressions,
+                ExpressionString = ExpressionString,
+                Expressions = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<BsonDocument>(JsonSerializer.Serialize(Expressions))
+            };
+        }
+    }   
+
+    [BsonIgnoreExtraElements]
+    public class RuleExpressions : ICloneable
+    {
+        [BsonElement("operator")]
+        [JsonPropertyName("operator")]
+        public string Operator { get; set; }
+
+        [JsonPropertyName("left")]
+        [BsonElement]
+        public object Left { get; set; }
+
+        [JsonPropertyName("right")]
+        [BsonElement]
+        public object Right { get; set; }
+
+        //[BsonIgnore]
+        //[BsonElement]
+        //public RuleExpressions LeftRuleExpressions { get; set; }
+
+       // [BsonIgnore]
+       // [BsonElement]
+        //public RuleExpressions RightRuleExpressions { get; set; }
+
+        //[BsonElement("left")]
+        //[JsonIgnore]
+        // [BsonSerializer(typeof(MyCustomStringSerializer))]
+        // public object LeftBson { get; set; }        
+       // public BsonDocument LeftBson { get; set; }
+
+        //[BsonElement("right")]
+        //[JsonIgnore]
+         //[BsonSerializer(typeof(MyCustomStringSerializer))]
+         /// <summary>
+         /// public object RightBson { get; set; }       
+         /// </summary>
+         /// <returns></returns>
+        //public BsonDocument RightBson { get; set; }
+
+        public object Clone()
+        {
+            return this.MemberwiseClone();
+        }
+    }
+    class MyCustomStringSerializer : IBsonSerializer
+    {
+        public object Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+        {            
+            return BsonValueSerializer.Instance.Deserialize(context);
+        }
+        public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
+        {
+            switch (value)
+            {
+                case null:
+                    context.Writer.WriteNull();
+                    break;
+                case BsonDocument doc:
+                    {
+                        context.Writer.WriteStartDocument();
+                        var elementCount = doc.ElementCount;
+                        for (var index = 0; index < elementCount; index++)
+                        {
+                            var element = doc.GetElement(index);
+                            context.Writer.WriteName(element.Name);
+                            BsonValueSerializer.Instance.Serialize(context, element.Value);
+                        }
+                        context.Writer.WriteEndDocument();
+                        break;
+                    }
+                case string str:
+                    {
+                        context.Writer.WriteString(str);
+                        break;
+                    }                    
+                // TODO: check other types
+                default:
+                    BsonSerializer.Serialize(context.Writer, value.ToString());
+                    break;
+            }
+        }
+        public Type ValueType => typeof(object);
+    }
+}
