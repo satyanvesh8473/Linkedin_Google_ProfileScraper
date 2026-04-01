@@ -1,37 +1,29 @@
-See the end of this message for details on invoking 
-just-in-time (JIT) debugging instead of this dialog box.
+private BsonValue ConvertToBson(object value)
+{
+    if (value == null)
+        return BsonNull.Value;
 
-************** Exception Text **************
-System.InvalidOperationException: CurrentDepth (64) is equal to or larger than the maximum allowed depth of 64. Cannot write the next JSON object or array.
-   at System.Text.Json.ThrowHelper.ThrowInvalidOperationException(ExceptionResource resource, Int32 currentDepth, Int32 maxDepth, Byte token, JsonTokenType tokenType)
-   at System.Text.Json.Utf8JsonWriter.WriteStart(Byte token)
-   at System.Text.Json.JsonDocument.WriteComplexElement(Int32 index, Utf8JsonWriter writer)
-   at System.Text.Json.JsonDocument.WriteElementTo(Int32 index, Utf8JsonWriter writer)
-   at System.Text.Json.Serialization.Converters.JsonElementConverter.Write(Utf8JsonWriter writer, JsonElement value, JsonSerializerOptions options)
-   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
-   at System.Text.Json.Serialization.JsonConverter`1.TryWriteAsObject(Utf8JsonWriter writer, Object value, JsonSerializerOptions options, WriteStack& state)
-   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
-   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
-   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
-   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
-   at System.Text.Json.Serialization.Metadata.JsonPropertyInfo`1.GetMemberAndWriteJson(Object obj, WriteStack& state, Utf8JsonWriter writer)
-   at System.Text.Json.Serialization.Converters.ObjectDefaultConverter`1.OnTryWrite(Utf8JsonWriter writer, T value, JsonSerializerOptions options, WriteStack& state)
-   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
-   at System.Text.Json.Serialization.Converters.ListOfTConverter`2.OnWriteResume(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
-   at System.Text.Json.Serialization.JsonCollectionConverter`2.OnTryWrite(Utf8JsonWriter writer, TCollection value, JsonSerializerOptions options, WriteStack& state)
-   at System.Text.Json.Serialization.JsonConverter`1.TryWrite(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
-   at System.Text.Json.Serialization.JsonConverter`1.WriteCore(Utf8JsonWriter writer, T& value, JsonSerializerOptions options, WriteStack& state)
+    if (value is RuleExpressions expr)
+    {
+        return new BsonDocument
+        {
+            { "operator", expr.Operator ?? "" },
+            { "left", ConvertToBson(expr.Left) },
+            { "right", ConvertToBson(expr.Right) }
+        };
+    }
 
+    if (value is string s)
+        return new BsonString(s);
 
-************** Loaded Assemblies **************
-System.Private.CoreLib
-    Assembly Version: 8.0.0.0
-    Location: C:\Program Files (x86)\dotnet\shared\Microsoft.NETCore.App\8.0.22\System.Private.CoreLib.dll
-----------------------------------------
-RulesUpload
-    Assembly Version: 1.0.0.0
-    Location: C:\Satya\Rules_upload\MVR\MVR\RulesUpload\bin\Debug\net8.0-windows10.0.19041.0\RulesUpload.dll
-----------------------------------------
-System.Runtime
-    Assembly Version: 8.0.0.0
-    Location: C:\Program Files (x86)\dotnet\shared\Microsoft.NET
+    if (value is int i)
+        return new BsonInt32(i);
+
+    if (value is double d)
+        return new BsonDouble(d);
+
+    if (value is bool b)
+        return new BsonBoolean(b);
+
+    return new BsonString(value.ToString());
+}
