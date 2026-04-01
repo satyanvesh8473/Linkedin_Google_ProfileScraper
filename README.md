@@ -1,37 +1,46 @@
- public static bool IsValid(CreateRuleParameters rule)
+private void TraverseJsonElement(RuleExpressions root, CreateRuleParameters createRuleParameters, CreateRulesRequest createRulesRequest)
         {
-            if (rule.Expressions.Operator == null || rule.RuleType == null)
+            if (root.Operator != null)
             {
-                throw new ApplicationException("Rule Type Parameter value");
-            }
-            if (!IsValidRuleType(rule.RuleType))
-            {
-                throw new ApplicationException(string.Format(" Rule Type {0}", rule.RuleType));
-            }
-            NullValueCheck(rule.Expressions);
-            var leftElement = (JsonElement)rule.Expressions.Left;
-            var rightElement = (JsonElement)rule.Expressions.Right;
-            if (leftElement.ValueKind == JsonValueKind.String || leftElement.ValueKind == JsonValueKind.Number)
-            {
-                if (rule.Expressions.Operator == null)
+                NullCheck(root);
+                var leftElement = (JsonElement)root.Left;
+                var rightElement = (JsonElement)root.Right;
+                RuleExpressions leftExpr = new RuleExpressions(), rightExpr = new RuleExpressions();
+                if (leftElement.ValueKind != JsonValueKind.String)
                 {
-                    throw new ApplicationException("Relational Operator Value null");
+                    string leftvalue = string.Empty, rightvalue;
+                    leftExpr = JsonSerializer.Deserialize<RuleExpressions>(leftElement.GetRawText(), new JsonSerializerOptions
+                    {
+                        MaxDepth = 256
+                    });
+                    NullCheck(leftExpr);
+                    var LeftleftElement = (JsonElement)leftExpr.Left;
+                    if (LeftleftElement.ValueKind == JsonValueKind.String)
+                    {
+                        leftvalue = leftExpr.Left.ToString();
+                        rightvalue = leftExpr.Right.ToString();
+                        
+                    }
                 }
-                string leftvalue = leftElement.ToString();
-                if (!Enum.IsDefined(typeof(RelationalOperator), rule.Expressions.Operator))
+                if (rightElement.ValueKind != JsonValueKind.String && rightElement.ValueKind != JsonValueKind.Number)
                 {
-                    throw new ApplicationException(string.Format(" Relational operator {0}", rule.Expressions.Operator.ToString()));
+                    string leftvalue = string.Empty;
+                    rightExpr = JsonSerializer.Deserialize<RuleExpressions>(rightElement.GetRawText(), new JsonSerializerOptions
+                    {
+                        MaxDepth = 256
+                    });
+                    NullCheck(rightExpr);
+
+                    var rightleftElement = (JsonElement)rightExpr.Left;
+                    if (rightleftElement.ValueKind == JsonValueKind.String)
+                    {
+                        leftvalue = rightExpr.Left.ToString();
+
+                       
+                    }
+                    TraverseJsonElement(leftExpr, createRuleParameters, createRulesRequest);
+                    TraverseJsonElement(rightExpr, createRuleParameters, createRulesRequest);
                 }
-                string rightvalue = rightElement.ToString();
-                LeftRightCheck(leftvalue, rightvalue);
-                if ((leftvalue.EndsWith("Age") || leftvalue == "ConfinementDuration" || leftvalue == "Salary") && (leftElement.ValueKind != JsonValueKind.Number))
-                {
-                    throw new ApplicationException(string.Format("Right Value is Invalid for Left Value {0}", leftvalue.ToString()));
-                }
+
             }
-            else
-            {
-                Preoder(rule.Expressions);
-            }
-            return true;
         }
